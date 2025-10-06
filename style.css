@@ -1,0 +1,167 @@
+/* Basic page styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to the top, not center */
+    min-height: 100vh;
+    margin: 0;
+    background-color: #e0f2f7; /* Light blue background */
+    color: #333;
+    padding-top: 50px; /* Space from the top */
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 900px; /* Max width for the content */
+    width: 100%;
+}
+
+h1 {
+    color: #007bff;
+    margin-bottom: 15px;
+    font-size: 2.5em;
+}
+
+.instruction {
+    font-size: 1.1em;
+    margin-bottom: 25px;
+    color: #555;
+}
+
+.note-display {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 35px;
+    color: #28a745; /* Green for detected note */
+    min-height: 1.5em; /* Prevent layout shift when note appears */
+}
+
+/* Button styling */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    margin: 10px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+button:hover:enabled {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+button:active:enabled {
+    transform: translateY(0);
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Piano Keyboard Styling */
+#piano-keyboard {
+    position: relative; /* Needed for absolute positioning of black keys */
+    display: flex; /* Arranges keys in a row */
+    margin: 40px auto;
+    width: fit-content; /* Adjusts width based on content */
+    border: 2px solid #333;
+    border-radius: 8px;
+    background-color: #444; /* Dark background for the piano */
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+    padding: 10px;
+}
+
+.key {
+    border: 1px solid #ccc; /* Border for all keys */
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    position: relative; /* For text label positioning if we add them later */
+    transition: background-color 0.1s ease; /* Smooth transition for highlight */
+}
+
+/* White Keys */
+.key.white {
+    width: 60px; /* Width of a white key */
+    height: 200px; /* Height of a white key */
+    background-color: #f8f8f8; /* Light color for white keys */
+    border-color: #aaa;
+    margin-right: -1px; /* Overlap borders slightly to make them appear seamless */
+    z-index: 1; /* Ensure white keys are behind black keys */
+    box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.key.white:first-of-type {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.key.white:last-of-type {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+/* Black Keys */
+.key.black {
+    width: 40px; /* Width of a black key */
+    height: 120px; /* Height of a black key */
+    background-color: #333; /* Dark color for black keys */
+    border-color: #222;
+    position: absolute; /* Position black keys over white keys */
+    z-index: 2; /* Ensure black keys are on top */
+    box-shadow: inset 0 -3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Positioning black keys relative to white keys */
+/* This requires careful manual adjustment for each black key */
+/* The 'margin-left' values align the black keys above the gaps between white keys */
+
+/* C#4 (after C4) */
+.key[data-note="C#4"] { left: calc(60px - 20px); } /* white_width - (black_width / 2) */
+/* D#4 (after D4) */
+.key[data-note="D#4"] { left: calc(60px * 2 - 20px); }
+/* F#4 (after F4) */
+.key[data-note="F#4"] { left: calc(60px * 4 - 20px); }
+/* G#4 (after G4) */
+.key[data-note="G#4"] { left: calc(60px * 5 - 20px); }
+/* A#4 (after A4) */
+.key[data-note="A#4"] { left: calc(60px * 6 - 20px); }
+
+/* C#5 (after C5 - relative to the start of the C5 octave) */
+.key[data-note="C#5"] { left: calc(60px * 7 - 20px); }
+/* D#5 (after D5) */
+.key[data-note="D#5"] { left: calc(60px * 8 - 20px); }
+/* F#5 (after F5) */
+.key[data-note="F#5"] { left: calc(60px * 10 - 20px); }
+/* G#5 (after G5) */
+.key[data-note="G#5"] { left: calc(60px * 11 - 20px); }
+/* A#5 (after A5) */
+.key[data-note="A#5"] { left: calc(60px * 12 - 20px); }
+
+
+/* Styles for the highlighted (active) key */
+.key.active {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), inset 0 0 10px rgba(0, 255, 255, 0.5); /* Glowing effect */
+}
+
+.key.white.active {
+    background-color: #c9e9ff; /* Light blue for active white key */
+    border-color: #007bff;
+}
+
+.key.black.active {
+    background-color: #58caff; /* Brighter blue for active black key */
+    border-color: #007bff;
+}

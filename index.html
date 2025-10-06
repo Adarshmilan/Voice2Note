@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocal Pitch Practice App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Vocal Pitch Detector</h1>
+        <p class="instruction">Sing into your microphone, and see the note you're singing highlighted on the piano!</p>
+
+        <div class="note-display">
+            Current Note: <span id="current-note">--</span>
+        </div>
+
+        <div id="piano-keyboard">
+            <div class="key white" data-note="C4"></div>
+            <div class="key black" data-note="C#4"></div>
+            <div class="key white" data-note="D4"></div>
+            <div class="key black" data-note="D#4"></div>
+            <div class="key white" data-note="E4"></div>
+            <div class="key white" data-note="F4"></div>
+            <div class="key black" data-note="F#4"></div>
+            <div class="key white" data-note="G4"></div>
+            <div class="key black" data-note="G#4"></div>
+            <div class="key white" data-note="A4"></div>
+            <div class="key black" data-note="A#4"></div>
+            <div class="key white" data-note="B4"></div>
+
+            <div class="key white" data-note="C5"></div>
+            <div class="key black" data-note="C#5"></div>
+            <div class="key white" data-note="D5"></div>
+            <div class="key black" data-note="D#5"></div>
+            <div class="key white" data-note="E5"></div>
+            <div class="key white" data-note="F5"></div>
+            <div class="key black" data-note="F#5"></div>
+            <div class="key white" data-note="G5"></div>
+            <div class="key black" data-note="G#5"></div>
+            <div class="key white" data-note="A5"></div>
+            <div class="key black" data-note="A#5"></div>
+            <div class="key white" data-note="B5"></div>
+            
+            </div>
+
+        <button id="start-button">Start Microphone</button>
+        <button id="stop-button" disabled>Stop Microphone</button>
+    </div>
+
+    <script src="https://unpkg.com/meyda@5.0.0/dist/web/meyda.min.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
