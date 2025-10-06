@@ -114,7 +114,7 @@ async function startMicrophone() {
         mediaStreamSource = audioContext.createMediaStreamSource(currentStream);
 
         // Initialize Meyda for pitch detection
-        meydaAnalyzer = Meyda.createMeyda({
+        meydaAnalyzer = Meyda.create({
             'audioContext': audioContext,
             'source': mediaStreamSource,
             'bufferSize': 512, // Smaller buffer for lower latency
