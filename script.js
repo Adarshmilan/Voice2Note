@@ -97,13 +97,18 @@ function clearPianoHighlight() {
  */
 async function startMicrophone() {
     try {
-        // Request access to the user's microphone
-        currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // Create an AudioContext if it doesn't exist or is closed
+        // Create or resume the AudioContext in response to a user gesture
         if (!audioContext || audioContext.state === 'closed') {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        
+        // If the context is in a suspended state, it must be resumed
+        if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+        }
+
+        // Request access to the user's microphone
+        currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
         // Create a MediaStreamSource from the microphone stream
         mediaStreamSource = audioContext.createMediaStreamSource(currentStream);
