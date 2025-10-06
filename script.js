@@ -1,3 +1,10 @@
+// --- Meyda Library Check ---
+if (typeof Meyda === "undefined") {
+    console.error("Meyda library not loaded. Please check the script tag in your HTML file. It should be included before this script.");
+} else {
+    console.log("Meyda library loaded successfully.");
+}
+
 // --- Configuration Constants ---
 const A4_FREQUENCY = 440; // The frequency of A4 (standard tuning)
 const MIDI_NOTE_A4 = 69;  // MIDI note number for A4
