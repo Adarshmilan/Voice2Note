@@ -1,208 +1,143 @@
-// --- Meyda Library Check ---
-if (typeof Meyda === "undefined") {
-    console.error("Meyda library not loaded. Please check the script tag in your HTML file. It should be included before this script.");
-} else {
-    console.log("Meyda library loaded successfully.");
+// DOM Elements
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const noteDisplay = document.getElementById("note-display");
+const freqDisplay = document.getElementById("frequency-display");
+const piano = document.getElementById("piano");
+
+let audioContext, analyser, bufferLength, dataArray, source;
+let animationId;
+let pianoKeys = [];
+
+const NOTES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+/* ================================
+   🎹 Build Piano (Responsive)
+   ================================ */
+function buildPiano() {
+  const screenWidth = window.innerWidth;
+  let startOctave, endOctave;
+
+  if (screenWidth < 640) { // 1 Octave
+    startOctave = 4;
+    endOctave = 4;
+  } else if (screenWidth < 1024) { // 2 Octaves
+    startOctave = 3;
+    endOctave = 4;
+  } else { // 3 Octaves
+    startOctave = 3;
+    endOctave = 5;
+  }
+
+  for (let octave = startOctave; octave <= endOctave; octave++) {
+    NOTES.forEach(note => {
+      const key = document.createElement("div");
+      key.classList.add("key");
+      key.classList.add(note.includes("#") ? "black" : "white");
+      key.dataset.note = note + octave;
+      key.innerText = key.dataset.note; // show label
+      piano.appendChild(key);
+      pianoKeys.push(key);
+    });
+  }
 }
 
-// --- Configuration Constants ---
-const A4_FREQUENCY = 440; // The frequency of A4 (standard tuning)
-const MIDI_NOTE_A4 = 69;  // MIDI note number for A4
-// Array of note names (C, C#, D, etc.) for mapping MIDI numbers to readable notes
-const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+/* 🎤 Start Mic */
+startBtn.addEventListener("click", async () => {
+  if (!audioContext) audioContext = new AudioContext();
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  source = audioContext.createMediaStreamSource(stream);
 
-// --- DOM Elements ---
-const startButton = document.getElementById('start-button');
-const stopButton = document.getElementById('stop-button');
-const currentNoteDisplay = document.getElementById('current-note');
-const pianoKeys = document.querySelectorAll('.key'); // Get all piano key elements
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 2048;
+  bufferLength = analyser.fftSize;
+  dataArray = new Float32Array(bufferLength);
 
-// --- Audio Context and Analyzer Variables ---
-let audioContext = null;
-let mediaStreamSource = null;
-let meydaAnalyzer = null;
-let currentStream = null; // To keep track of the active microphone stream
+  source.connect(analyser);
 
-// --- State Variables ---
-let previousNoteElement = null; // To keep track of the previously highlighted key for deactivation
+  detectPitch();
 
-// --- Helper Functions ---
+  startBtn.classList.add("hidden");
+  stopBtn.classList.remove("hidden");
+});
 
-/**
- * Converts a frequency (in Hz) to its nearest musical note name (e.g., "A4", "C#5").
- * @param {number} frequency The detected frequency in Hz.
- * @returns {string} The musical note name.
- */
-function frequencyToNoteName(frequency) {
-    if (frequency === null || frequency < 20 || frequency > 2000) { // Ignore very low/high or null frequencies
-        return "--";
-    }
+/* ⏹ Stop Mic */
+stopBtn.addEventListener("click", () => {
+  if (source) {
+    source.disconnect();
+  }
+  cancelAnimationFrame(animationId);
+  noteDisplay.textContent = "Note: --";
+  freqDisplay.textContent = "Frequency: -- Hz";
+  highlightKey(null);
 
-    // Calculate MIDI note number using the formula:
-    // noteNumber = 12 * log2(frequency / A4_FREQUENCY) + MIDI_NOTE_A4
-    const noteNumber = 12 * Math.log2(frequency / A4_FREQUENCY) + MIDI_NOTE_A4;
+  startBtn.classList.remove("hidden");
+  stopBtn.classList.add("hidden");
+});
 
-    // Round to the nearest whole MIDI note number
-    const roundedNoteNumber = Math.round(noteNumber);
+/* Pitch Detection (Autocorrelation) */
+function autoCorrelate(buffer, sampleRate) {
+  let SIZE = buffer.length;
+  let rms = 0;
+  for (let i = 0; i < SIZE; i++) {
+    let val = buffer[i];
+    rms += val * val;
+  }
+  rms = Math.sqrt(rms / SIZE);
+  if (rms < 0.01) return -1;
 
-    // Calculate the octave (MIDI note 60 is C4, 69 is A4)
-    // C4 is MIDI note 60, so C0 starts at MIDI note 12 (12 * 0 + 0)
-    // (roundedNoteNumber - 12) / 12 gives us the octave number relative to C0
-    const octave = Math.floor((roundedNoteNumber / 12) - 1); 
+  let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+  for (let i = 0; i < SIZE/2; i++) if (Math.abs(buffer[i]) < thres) { r1 = i; break; }
+  for (let i = 1; i < SIZE/2; i++) if (Math.abs(buffer[SIZE-i]) < thres) { r2 = SIZE-i; break; }
+  buffer = buffer.slice(r1, r2); SIZE = buffer.length;
 
-    // Calculate the index within the 12-note scale (0-11)
-    const noteIndex = roundedNoteNumber % 12;
+  let c = new Array(SIZE).fill(0);
+  for (let i = 0; i < SIZE; i++)
+    for (let j = 0; j < SIZE - i; j++)
+      c[i] = c[i] + buffer[j] * buffer[j+i];
 
-    // Return the note name with its octave
-    return NOTE_NAMES[noteIndex] + octave;
+  let d = 0; while (c[d] > c[d+1]) d++;
+  let maxval = -1, maxpos = -1;
+  for (let i = d; i < SIZE; i++) if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+  return sampleRate / maxpos;
 }
 
-/**
- * Highlights the corresponding key on the virtual piano and updates the note display.
- * Deactivates the previously highlighted key.
- * @param {string} noteName The musical note name (e.g., "C4").
- */
-function highlightNoteOnPiano(noteName) {
-    // Deactivate the previous key if it exists
-    if (previousNoteElement) {
-        previousNoteElement.classList.remove('active');
-    }
-
-    // Find the current note's key element using its data-note attribute
-    const currentNoteElement = document.querySelector(`.key[data-note="${noteName}"]`);
-
-    // Activate the current key if found
-    if (currentNoteElement) {
-        currentNoteElement.classList.add('active');
-        previousNoteElement = currentNoteElement; // Store for next deactivation
-    } else {
-        // If no key is found for the note (e.g., out of our 2-octave range),
-        // ensure no key remains highlighted.
-        previousNoteElement = null;
-    }
-
-    // Update the text display
-    currentNoteDisplay.textContent = noteName;
+/* Frequency → Note */
+function frequencyToNote(frequency) {
+  const A4 = 440;
+  const noteNumber = 12 * (Math.log(frequency / A4) / Math.log(2)) + 69;
+  return Math.round(noteNumber);
+}
+function noteName(noteNumber) {
+  const noteNames = NOTES;
+  return noteNames[noteNumber % 12] + Math.floor(noteNumber / 12 - 1);
 }
 
-/**
- * Clears the active highlight from all piano keys and resets the note display.
- */
-function clearPianoHighlight() {
-    if (previousNoteElement) {
-        previousNoteElement.classList.remove('active');
-        previousNoteElement = null;
-    }
-    currentNoteDisplay.textContent = "--";
+/* Highlight Key */
+function highlightKey(note) {
+  pianoKeys.forEach(key => {
+    if (key.dataset.note === note) key.classList.add("active");
+    else key.classList.remove("active");
+  });
 }
 
+/* Detection Loop */
+function detectPitch() {
+  analyser.getFloatTimeDomainData(dataArray);
+  const pitch = autoCorrelate(dataArray, audioContext.sampleRate);
 
-// --- Main Logic: Start/Stop Microphone ---
-
-/**
- * Initiates microphone access and starts the pitch detection process.
- */
-async function startMicrophone() {
-    try {
-        // Create or resume the AudioContext in response to a user gesture
-        if (!audioContext || audioContext.state === 'closed') {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        
-        // If the context is in a suspended state, it must be resumed
-        if (audioContext.state === 'suspended') {
-            await audioContext.resume();
-        }
-
-        // Request access to the user's microphone
-        currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // Create a MediaStreamSource from the microphone stream
-        mediaStreamSource = audioContext.createMediaStreamSource(currentStream);
-
-        // Initialize Meyda for pitch detection
-        meydaAnalyzer = Meyda.create({
-            'audioContext': audioContext,
-            'source': mediaStreamSource,
-            'bufferSize': 512, // Smaller buffer for lower latency
-            'featureExtractors': ['pitch'], // Only extract pitch using the YIN algorithm
-            'callback': (features) => {
-                // This callback runs repeatedly with pitch features
-                const pitch = features.pitch; // The detected fundamental frequency in Hz
-
-                if (pitch && pitch > 0) { // Ensure a valid pitch is detected
-                    const noteName = frequencyToNoteName(pitch);
-                    highlightNoteOnPiano(noteName);
-                } else {
-                    // No pitch detected (e.g., silence), clear display
-                    clearPianoHighlight();
-                }
-            }
-        });
-
-        // Start the Meyda analyzer
-        meydaAnalyzer.start();
-
-        // Update button states
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        console.log("Microphone started and pitch detection active.");
-
-    } catch (error) {
-        console.error('Error accessing microphone:', error);
-        alert('Could not start microphone. Please ensure permissions are granted and no other app is using it.');
-        // Ensure buttons are reset if there's an error
-        startButton.disabled = false;
-        stopButton.disabled = true;
-    }
+  if (pitch !== -1) {
+    const noteNum = frequencyToNote(pitch);
+    const note = noteName(noteNum);
+    noteDisplay.textContent = "Note: " + note;
+    freqDisplay.textContent = "Frequency: " + pitch.toFixed(2) + " Hz";
+    highlightKey(note);
+  }
+  animationId = requestAnimationFrame(detectPitch);
 }
 
-/**
- * Stops the microphone input and pitch detection process.
- */
-function stopMicrophone() {
-    if (meydaAnalyzer) {
-        meydaAnalyzer.stop(); // Stop Meyda analysis
-        meydaAnalyzer = null;
-    }
+window.onload = buildPiano;
 
-    if (mediaStreamSource) {
-        mediaStreamSource.disconnect(); // Disconnect audio nodes
-        mediaStreamSource = null;
-    }
-
-    if (currentStream) {
-        // Stop all tracks in the media stream (turns off microphone light)
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-    }
-    
-    if (audioContext && audioContext.state !== 'closed') {
-        audioContext.close().then(() => {
-            console.log("AudioContext closed.");
-            audioContext = null;
-        });
-    }
-
-    // Clear UI and update button states
-    clearPianoHighlight();
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    console.log("Microphone stopped.");
-}
-
-// --- Event Listeners ---
-startButton.addEventListener('click', startMicrophone);
-stopButton.addEventListener('click', stopMicrophone);
-
-// Initially disable the stop button as the mic isn't active
-stopButton.disabled = true;
-
-// Optional: Add a listener for when the browser tab loses focus to stop the mic
-// This is good practice for privacy and resource management
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && meydaAnalyzer && meydaAnalyzer.isRunning) {
-        stopMicrophone();
-        console.log("Microphone stopped due to tab being hidden.");
-    }
+window.addEventListener("resize", () => {
+  location.reload(); // simple approach, reload UI
 });

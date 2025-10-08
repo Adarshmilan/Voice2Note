@@ -1,57 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vocal Pitch Practice App</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <h1>🎤 Vocal Pitch Detector</h1>
-      <p class="instruction">
-        Sing into your microphone, and see the note you're singing highlighted
-        on the piano!
-      </p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice2Note</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gradient-to-br from-slate-800 to-slate-900 text-white flex flex-col items-center min-h-screen">
 
-      <div class="note-display">
-        Current Note: <span id="current-note">--</span>
-      </div>
+  <!-- Logo -->
+  <div class="mt-6">
+    <img src="cropedimg.png" alt="Voice2Note Logo" class="w-24 h-24 mx-auto rounded-full shadow-lg">
+  </div>
 
-      <div id="piano-keyboard">
-        <div class="key white" data-note="C4"></div>
-        <div class="key black" data-note="C#4"></div>
-        <div class="key white" data-note="D4"></div>
-        <div class="key black" data-note="D#4"></div>
-        <div class="key white" data-note="E4"></div>
-        <div class="key white" data-note="F4"></div>
-        <div class="key black" data-note="F#4"></div>
-        <div class="key white" data-note="G4"></div>
-        <div class="key black" data-note="G#4"></div>
-        <div class="key white" data-note="A4"></div>
-        <div class="key black" data-note="A#4"></div>
-        <div class="key white" data-note="B4"></div>
+  <!-- Title -->
+  <h1 class="text-3xl sm:text-4xl font-bold mt-3 mb-1">Voice2Note</h1>
+  <p class="text-gray-300 text-center mb-6">Sing into your mic and see your note in real time!</p>
 
-        <div class="key white" data-note="C5"></div>
-        <div class="key black" data-note="C#5"></div>
-        <div class="key white" data-note="D5"></div>
-        <div class="key black" data-note="D#5"></div>
-        <div class="key white" data-note="E5"></div>
-        <div class="key white" data-note="F5"></div>
-        <div class="key black" data-note="F#5"></div>
-        <div class="key white" data-note="G5"></div>
-        <div class="key black" data-note="G#5"></div>
-        <div class="key white" data-note="A5"></div>
-        <div class="key black" data-note="A#5"></div>
-        <div class="key white" data-note="B5"></div>
-      </div>
+  <!-- Controls -->
+  <div class="flex gap-4 mb-6">
+    <button id="startBtn" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow-lg transition">
+      Start Microphone
+    </button>
+    <button id="stopBtn" class="bg-cyan-500 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg shadow-lg transition hidden">
+      Stop Microphone
+    </button>
+  </div>
 
-      <button id="start-button">Start Microphone</button>
-      <button id="stop-button" disabled>Stop Microphone</button>
-    </div>
+  <!-- Display Note -->
+  <div class="text-center mb-4">
+    <div id="note-display" class="text-2xl font-bold text-white">Note: --</div>
+    <div id="frequency-display" class="text-lg text-gray-200">Frequency: -- Hz</div>
+  </div>
 
-    <script src="https://unpkg.com/meyda@5.6.2/dist/meyda.min.js"></script>
+  <!-- Piano -->
+  <div id="piano-wrapper" class="overflow-x-auto w-full flex justify-center">
+    <div id="piano" class="flex justify-center bg-slate-900 rounded-xl p-3 shadow-lg"></div>
+  </div>
 
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
