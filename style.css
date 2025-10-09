@@ -14,7 +14,7 @@
 
 /* White keys */
 .key.white {
-  width: 60px;
+  width: 50px;
   height: 260px;
   background: linear-gradient(to bottom, #fff, #eaeaea);
   border: 1px solid #000;
@@ -63,4 +63,55 @@
   background: linear-gradient(to bottom, #63b3ed, #3182ce);
   box-shadow: 0 0 15px #60a5fa;
   color: #fff;
+}
+
+
+/* 🌟 Footer Styling */
+.footer {
+  background: #111;              /* Dark background */
+  color: #eee;                   /* Light text */
+  text-align: center;            /* Center text */
+  padding: 25px 15px;            /* Spacing */
+  margin-top: 40px;              /* Gap above footer */
+  width: 100%;                   /* Full width */
+  font-family: Arial, sans-serif;
+}
+
+.footer-container {
+  max-width: 1000px;
+  margin: auto;
+}
+
+.footer h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #f8f8f8;
+}
+
+.footer p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+  color: #bbb;
+}
+
+.footer-links {
+  margin: 12px 0;
+}
+
+.footer-links a {
+  margin: 0 12px;
+  text-decoration: none;
+  color: #4da6ff;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #1e90ff; /* Hover effect */
+}
+
+.footer-copy {
+  margin-top: 18px;
+  font-size: 0.8rem;
+  color: #777;
 }

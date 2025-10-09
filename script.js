@@ -1,4 +1,3 @@
-// DOM Elements
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const noteDisplay = document.getElementById("note-display");
@@ -11,22 +10,19 @@ let pianoKeys = [];
 
 const NOTES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-/* ================================
-   🎹 Build Piano (Responsive)
-   ================================ */
 function buildPiano() {
   const screenWidth = window.innerWidth;
   let startOctave, endOctave;
 
-  if (screenWidth < 640) { // 1 Octave
+  if (screenWidth < 640) { 
     startOctave = 4;
     endOctave = 4;
-  } else if (screenWidth < 1024) { // 2 Octaves
+  } else if (screenWidth < 1024) { 
     startOctave = 3;
     endOctave = 4;
-  } else { // 3 Octaves
+  } else { 
     startOctave = 3;
-    endOctave = 5;
+    endOctave = 6;
   }
 
   for (let octave = startOctave; octave <= endOctave; octave++) {
@@ -35,14 +31,13 @@ function buildPiano() {
       key.classList.add("key");
       key.classList.add(note.includes("#") ? "black" : "white");
       key.dataset.note = note + octave;
-      key.innerText = key.dataset.note; // show label
+      key.innerText = key.dataset.note; 
       piano.appendChild(key);
       pianoKeys.push(key);
     });
   }
 }
 
-/* 🎤 Start Mic */
 startBtn.addEventListener("click", async () => {
   if (!audioContext) audioContext = new AudioContext();
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -61,7 +56,6 @@ startBtn.addEventListener("click", async () => {
   stopBtn.classList.remove("hidden");
 });
 
-/* ⏹ Stop Mic */
 stopBtn.addEventListener("click", () => {
   if (source) {
     source.disconnect();
